@@ -33,8 +33,8 @@ public class ErrorController {
 
     @ExceptionHandler(ErrorResponseException.class)
     public ResponseEntity<WebResponse<?>> errorResponse(ErrorResponseException error){
-            WebResponse<String> response = WebResponse
-                    .<String>builder()
+            WebResponse<Map<String, String >> response = WebResponse
+                    .<Map<String, String>>builder()
                     .status(error.getStatus())
                     .data(error.getData())
                     .message(error.getMessage())

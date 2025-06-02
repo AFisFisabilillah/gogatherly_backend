@@ -4,14 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gogatherly.gogatherly.model.entity.User;
 import com.gogatherly.gogatherly.model.repository.UserRepository;
 import com.gogatherly.gogatherly.service.JwtService;
+import com.gogatherly.gogatherly.service.UserService;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +28,7 @@ public class JwtFilter implements Filter {
     @Autowired
     private JwtService jwtService;
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -36,21 +39,27 @@ public class JwtFilter implements Filter {
 
         log.info("masuk ke jwt filter");
         String authorization = request.getHeader("Authorization");
-        if(authorization == null && !authorization.startsWith("Bearer ")){
+        log.info("apakh null = " +String.valueOf(request.getHeader("Authorization")==null));
+        if(authorization == null){
+            filterChain.doFilter(servletRequest,servletResponse);
+            return;
+        }
+        if(!authorization.startsWith("Bearer ")){
             log.info("nggak ada header authorize");
             filterChain.doFilter(servletRequest, servletResponse);
+            return;
         }
 
         String token = authorization.substring( 7);
         try {
             String email = jwtService.getEmail(token);
-            User user = userRepository.findByEmail(email).orElse(null);
+            UserDetails user = userService.loadUserByUsername(email);
 
             log.info("Masih aman di jwt filter");
 
             if(user != null && SecurityContextHolder.getContext().getAuthentication() == null){
                 log.info("token valid");
-                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user.getEmail(), null, user.getAuthorities());
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(auth);
                 log.info("user sudah terdaftar");

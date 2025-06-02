@@ -18,6 +18,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class User implements UserDetails , CredentialsContainer {
 
     @Id
@@ -33,6 +34,7 @@ public class User implements UserDetails , CredentialsContainer {
     @Column(name = "phone_number")
     private String phoneNumber;
 
+    @Column()
     private String password;
 
     @Enumerated(value = EnumType.STRING)
@@ -45,6 +47,10 @@ public class User implements UserDetails , CredentialsContainer {
     private Integer verificationCode;
 
     private Boolean verify;
+
+    @OneToMany(mappedBy = "user")
+    private List<Event> events;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
