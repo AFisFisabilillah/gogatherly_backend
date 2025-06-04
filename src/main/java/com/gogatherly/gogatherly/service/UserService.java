@@ -43,7 +43,7 @@ public class UserService implements UserDetailsService {
 
         if(user.getProfilePhoto() != null){
             try {
-                Path deletePath = Path.of("upload/public/banner/profilePhoto/" + user.getProfilePhoto());
+                Path deletePath = Path.of("upload/public/profilePhoto/" + user.getProfilePhoto());
                 if(Files.exists(deletePath)){
                     Files.delete(deletePath);
                 }
@@ -55,7 +55,7 @@ public class UserService implements UserDetailsService {
         String newFileName = UUID.randomUUID().toString()+"_"+user.getName()+extension;
 
         try {
-            Path uploadPath = Path.of("upload/public/banner/profilePhoto" + newFileName);
+            Path uploadPath = Path.of("upload/public/profilePhoto/" + newFileName);
             Files.write(uploadPath, photoProfile.getBytes());
         }catch (IOException e){
             System.err.println(e);
@@ -74,7 +74,7 @@ public class UserService implements UserDetailsService {
         response.setPhotoProfile(user.getProfilePhoto());
         response.setEmail(user.getEmail());
         response.setName(user.getName());
-        response.setNik(response.getNik());
+        response.setNik(user.getNik());
         response.setPhoneNumber(user.getPhoneNumber());
         return response;
     }
