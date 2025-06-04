@@ -24,18 +24,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping(
-            path = "/users/profile",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public Map<String, ?> profile(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        User principal = (User) authentication.getPrincipal();
-
-
-        return new HashMap<>(Map.of("name", principal.getEmail(), "role", principal.getRole()));
-    }
 
 
     @GetMapping(
@@ -90,6 +79,21 @@ public class UserController {
                 .status("success")
                 .message("success change profilr photo")
                 .data(response)
+                .build();
+    }
+
+    @GetMapping(
+            path = "/users/profile",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public WebResponse<UserResponse> getProfile(){
+        UserResponse profile = userService.getProfile();
+
+        return WebResponse
+                .<UserResponse>builder()
+                .data(profile)
+                .message("success get profile")
+                .status("success")
                 .build();
     }
 
