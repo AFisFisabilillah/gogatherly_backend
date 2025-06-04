@@ -29,8 +29,7 @@ public class UserService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
 
-    @Value("${file.upload}")
-    private String pathUpload;
+
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -69,5 +68,14 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
-
+    public UserResponse getProfile(){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserResponse response = new UserResponse();
+        response.setPhotoProfile(user.getProfilePhoto());
+        response.setEmail(user.getEmail());
+        response.setName(user.getName());
+        response.setNik(response.getNik());
+        response.setPhoneNumber(user.getPhoneNumber());
+        return response;
+    }
 }
