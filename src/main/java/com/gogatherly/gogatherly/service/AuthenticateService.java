@@ -2,8 +2,10 @@ package com.gogatherly.gogatherly.service;
 
 import com.gogatherly.gogatherly.dto.*;
 import com.gogatherly.gogatherly.exception.ErrorResponseException;
+import com.gogatherly.gogatherly.model.entity.EventManager;
 import com.gogatherly.gogatherly.model.entity.ROLE;
 import com.gogatherly.gogatherly.model.entity.User;
+import com.gogatherly.gogatherly.model.repository.EventManagerRepository;
 import com.gogatherly.gogatherly.model.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolation;
@@ -44,6 +46,8 @@ public class AuthenticateService {
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
+    private EventManagerRepository eventManagerRepository;
+    @Autowired
     private JwtService jwtService;
 
 
@@ -63,10 +67,10 @@ public class AuthenticateService {
         user.setPassword(bCryptPasswordEncoder.encode(request.getPassword()));
         user.setPhoneNumber(request.getPhoneNumber());
         user.setNik(request.getNik());
-        user.setRole(ROLE.ROLE_USER);
         user.setVerificationCode(verificationCode());
         user.setVerificationExpired(LocalDateTime.now().plusMinutes(5L));
         user.setVerify(false);
+        user.setRole(ROLE.ROLE_USER.name());
         userRepository.save(user);
         sendVerificationEmail(user);
 
@@ -83,20 +87,19 @@ public class AuthenticateService {
         }
 
 
-        User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPassword(bCryptPasswordEncoder.encode(request.getPassword()));
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setNik(request.getNik());
-        user.setRole(ROLE.ROLE_EVENT_MANAGER);
-        user.setVerificationCode(verificationCode());
-        user.setVerificationExpired(LocalDateTime.now().plusMinutes(5L));
-        user.setVerify(false);
-        userRepository.save(user);
-        sendVerificationEmail(user);
+        EventManager eventManager = new EventManager();
+        eventManager.setName(request.getName());
+        eventManager.setEmail(request.getEmail());
+        eventManager.setPassword(bCryptPasswordEncoder.encode(request.getPassword()));
+        eventManager.setPhoneNumber(request.getPhoneNumber());
+        eventManager.setNik(request.getNik());
+        eventManager.setVerificationCode(verificationCode());
+        eventManager.setVerificationExpired(LocalDateTime.now().plusMinutes(5L));
+        eventManager.setVerify(false);
+        eventManagerRepository.save(eventManager);
+        sendVerificationEmail(eventManager);
 
-        return user;
+        return eventManager;
 
     }
 

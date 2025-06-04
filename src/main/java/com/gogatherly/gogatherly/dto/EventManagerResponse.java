@@ -11,4 +11,7 @@ public class EventManagerResponse {
     private Integer id;
     private String name;
     private String email;
+    private String description;
+    private String photoProfile;
+
 }

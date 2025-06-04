@@ -19,6 +19,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "role")
+@DiscriminatorValue("ROLE_USER")
 public class User implements UserDetails , CredentialsContainer {
 
     @Id
@@ -34,11 +36,13 @@ public class User implements UserDetails , CredentialsContainer {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Column()
     private String password;
 
-    @Enumerated(value = EnumType.STRING)
-    private ROLE role;
+    @Column(insertable=false, updatable=false)
+    private String role;
+
+    @Column(name = "photo_profile")
+    private String profilePhoto;
 
     @Column(name = "verification_expired")
     private LocalDateTime verificationExpired;
@@ -54,7 +58,7 @@ public class User implements UserDetails , CredentialsContainer {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.name()));
+        return List.of(new SimpleGrantedAuthority(role));
     }
 
     @Override
