@@ -106,6 +106,5 @@ public class EventManagerService {
 
         return response;
 
-
     }
 }
