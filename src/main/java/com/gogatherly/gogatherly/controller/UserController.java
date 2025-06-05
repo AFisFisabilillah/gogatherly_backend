@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.InetAddress;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -68,10 +69,9 @@ public class UserController {
     public WebResponse<UserResponse> updatePhotoProfile(@RequestPart(name = "photo") MultipartFile file){
         User user = userService.changePhotoProfile(file);
         UserResponse response = new UserResponse();
-        response.setName(user.getEmail());
-        response.setNik(user.getNik());
+        response.setName(user.getName());
         response.setPhoneNumber(user.getPhoneNumber());
-        response.setPhotoProfile(user.getProfilePhoto());
+        response.setPhotoProfile("/public/profilePhoto/"+user.getProfilePhoto());
         response.setEmail(user.getEmail());
 
         return WebResponse
@@ -95,6 +95,24 @@ public class UserController {
                 .message("success get profile")
                 .status("success")
                 .build();
+    }
+
+    @PatchMapping(
+            path = "/users/profile",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+
+    public WebResponse<UserResponse> updateProfile(@ModelAttribute UserUpdateRequest request){
+
+        UserResponse response = userService.updateProfile(request);
+        return WebResponse
+                .<UserResponse>builder()
+                .status("success")
+                .message("success update your profile")
+                .data(response)
+                .build();
+
     }
 
 
