@@ -323,7 +323,12 @@ public class EventService {
     }
 
 
-    public List<ListEventResponse> searchEventUser(String date, String category, String q){
+    public WebResponseList<List<ListEventResponse>> searchEventUser(String date, String category, String q, Integer page, Integer size){
+
+        if(size < 1){
+            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, "error", "size must greather than zero");
+        }
+
         StringBuilder queryBuilder = new StringBuilder("""
         SELECT e.*
         FROM events e
@@ -349,20 +354,44 @@ public class EventService {
             queryParams.add("date");
         }
 
+        String countQuery = queryBuilder.toString().replace("e.*", "COUNT(e.id)");
+        Query count = entityManager.createNativeQuery(countQuery, Long.class);
+
+        queryBuilder.append(" ORDER BY name ASC LIMIT :size OFFSET :page");
         Query nativeQuery = entityManager.createNativeQuery(queryBuilder.toString(), Event.class);
+        nativeQuery.setParameter("size", size);
+        nativeQuery.setParameter("page", page*size);
 
         if (queryParams.contains("q")) {
             nativeQuery.setParameter("q", q);
+            count.setParameter("q", q);
         }
         if (queryParams.contains("category")) {
             nativeQuery.setParameter("category", category);
+            count.setParameter("category", category);
         }
         if (queryParams.contains("date")) {
             LocalDate parse = LocalDate.parse(date);
             nativeQuery.setParameter("date", parse);
+            count.setParameter("date", parse);
+        }
+
+        Long countEvent = (Long) count.getSingleResult();
+        int totalPage = (int) Math.ceil(countEvent/size.doubleValue());
+        if(page > totalPage){
+            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, "error", "page must greather than totalPage");
         }
 
         List<Event> events = nativeQuery.getResultList();
+
+//        Meta data pagination
+        MetaData metaData = new MetaData();
+        metaData.setPage(page);
+        metaData.setSize(size);
+        metaData.setTotalPages(totalPage);
+        metaData.setTotalElements(countEvent);
+        metaData.setHasNext((page != metaData.getTotalPages()-1) && (page <= metaData.getTotalPages()-1 ));
+        metaData.setHasPrevious((page != 0 ) && (page >= 0 ));
 
         List<ListEventResponse> responses = new ArrayList<>();
 
@@ -399,7 +428,13 @@ public class EventService {
 
         }
 
-        return responses;
+        return WebResponseList
+                .<List<ListEventResponse>>builder()
+                .data(responses)
+                .meta(metaData)
+                .status("success")
+                .message("success get events")
+                .build();
 
     }
 

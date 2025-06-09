@@ -38,19 +38,18 @@ public class UserController {
             path = "/events/search",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public WebResponse<List<ListEventResponse>> eventSearching(
+    public WebResponseList<List<ListEventResponse>> eventSearching(
             @RequestParam(value = "q", required = false, defaultValue = " ") String q,
             @RequestParam(value = "category", required = false, defaultValue = " ") String category,
-            @RequestParam(value = "date", required = false, defaultValue = " ") String date
-    ){
-        List<ListEventResponse> responses = eventService.searchEventUser(date, category, q);
+            @RequestParam(value = "date", required = false, defaultValue = " ") String date,
+            @RequestParam(value = "page" , required = false, defaultValue = "0") Integer page,
+            @RequestParam(value = "size" , required = false, defaultValue = "10") Integer size
 
-        return WebResponse
-                .<List<ListEventResponse>>builder()
-                .status("success")
-                .message("get event serach")
-                .data(responses)
-                .build();
+    ){
+        WebResponseList<List<ListEventResponse>> response = eventService.searchEventUser(date, category, q, page, size);
+
+
+        return response;
     }
 
     @GetMapping(
