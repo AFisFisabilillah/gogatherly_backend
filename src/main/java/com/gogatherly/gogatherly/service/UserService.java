@@ -4,7 +4,9 @@ import com.gogatherly.gogatherly.dto.EventManagerResponse;
 import com.gogatherly.gogatherly.dto.UserResponse;
 import com.gogatherly.gogatherly.dto.UserUpdateRequest;
 import com.gogatherly.gogatherly.exception.ErrorResponseException;
+import com.gogatherly.gogatherly.model.entity.EventManager;
 import com.gogatherly.gogatherly.model.entity.User;
+import com.gogatherly.gogatherly.model.repository.EventManagerRepository;
 import com.gogatherly.gogatherly.model.repository.UserRepository;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -24,14 +26,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
 public class UserService implements UserDetailsService {
+    @Autowired
+    private EventManagerRepository eventManagerRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -167,5 +168,9 @@ public class UserService implements UserDetailsService {
         response.setPhoneNumber(user.getPhoneNumber());
 
         return response;
+    }
+    
+    public void getEventManager(){
+        List<EventManager> eventManagers = eventManagerRepository.findAll();
     }
 }

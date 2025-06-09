@@ -2,6 +2,7 @@ package com.gogatherly.gogatherly.controller;
 
 import com.gogatherly.gogatherly.dto.*;
 import com.gogatherly.gogatherly.model.entity.User;
+import com.gogatherly.gogatherly.service.EventManagerService;
 import com.gogatherly.gogatherly.service.EventService;
 import com.gogatherly.gogatherly.service.UserService;
 import org.hibernate.annotations.Cache;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.InetAddress;
+import java.text.Format;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +26,8 @@ public class UserController {
     private EventService eventService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private EventManagerService eventManagerService;
 
 
 
@@ -115,9 +119,20 @@ public class UserController {
 
     }
 
+    @GetMapping(
+            path = "/event-manager/{id}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public WebResponse<EventManagerDetailResponse> getEventManagerByID(@PathVariable("id")Integer id){
+        EventManagerDetailResponse res = eventManagerService.getEventManagerByid(id);
 
 
 
-
-
+        return WebResponse
+                .<EventManagerDetailResponse>builder()
+                .data(res)
+                .status("success")
+                .message("success get event manager with id "+id)
+                .build();
+    }
 }
