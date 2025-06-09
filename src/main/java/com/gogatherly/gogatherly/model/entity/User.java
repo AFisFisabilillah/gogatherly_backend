@@ -52,8 +52,7 @@ public class User implements UserDetails , CredentialsContainer {
 
     private Boolean verify;
 
-    @OneToMany(mappedBy = "user")
-    private List<Event> events;
+
 
 
     @Override

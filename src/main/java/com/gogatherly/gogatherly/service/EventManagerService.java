@@ -1,7 +1,6 @@
 package com.gogatherly.gogatherly.service;
 
-import com.gogatherly.gogatherly.dto.EventManagerResponse;
-import com.gogatherly.gogatherly.dto.EventManagerUpdateRequest;
+import com.gogatherly.gogatherly.dto.*;
 import com.gogatherly.gogatherly.exception.ErrorResponseException;
 import com.gogatherly.gogatherly.model.entity.EventManager;
 import com.gogatherly.gogatherly.model.repository.EventManagerRepository;
@@ -21,10 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -106,5 +103,48 @@ public class EventManagerService {
 
         return response;
 
+    }
+
+    public EventManagerDetailResponse getEventManagerByid(Integer id){
+        EventManager eventManager = eventManagerRepository.findById(id).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND, "erorr", "Event manager not found"));
+        EventManagerDetailResponse response = new EventManagerDetailResponse();
+        response.setName(eventManager.getName());
+        response.setPhotoProfile("/public/profilePhoto/"+eventManager.getProfilePhoto());
+        response.setEmail(eventManager.getEmail());
+        response.setId(eventManager.getId());
+        response.setDescription(eventManager.getDescription());
+        response.setEvents(new LinkedList<>());
+
+        eventManager.getEvents().forEach(event -> {
+            ListEventResponse eventResponse = new ListEventResponse();
+            eventResponse.setId(event.getId());
+            eventResponse.setBaner(event.getBanner());
+            eventResponse.setTitle(event.getTitle());
+
+            LocationEventResponse locationResponse = new LocationEventResponse();
+            locationResponse.setCity(event.getLocation().getCity());
+            locationResponse.setProvince(event.getLocation().getProvince());
+            locationResponse.setAddres(event.getLocation().getAddres());
+            locationResponse.setLatitude(event.getLocation().getLatitude());
+            locationResponse.setLongitude(event.getLocation().getLongitude());
+
+            eventResponse.setLocation(locationResponse);
+
+            DateTimeFormatter format = DateTimeFormatter.ofPattern("dd MMMM yyyy", new Locale("id", "ID"));
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm", new Locale("id", "ID"));
+            eventResponse.setStartDate(event.getStartEvent().format(format));
+            eventResponse.setEndDate(event.getEndEvent().format(format));
+            eventResponse.setStartTime((event.getStartEvent().format(timeFormatter)));
+            eventResponse.setEndTime((event.getEndEvent().format(timeFormatter)));
+
+            EventManagerResponse eventManagerResponse = new EventManagerResponse();
+            eventManagerResponse.setName(event.getUser().getName());
+            eventManagerResponse.setId(event.getUser().getId());
+            eventManagerResponse.setEmail(event.getUser().getEmail());
+
+            eventResponse.setEventManager(eventManagerResponse);
+            response.getEvents().add(eventResponse);
+        });
+        return response;
     }
 }
