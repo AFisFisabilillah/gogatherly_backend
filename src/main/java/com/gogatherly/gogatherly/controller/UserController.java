@@ -1,12 +1,16 @@
 package com.gogatherly.gogatherly.controller;
 
 import com.gogatherly.gogatherly.dto.*;
+import com.gogatherly.gogatherly.model.entity.EventManager;
 import com.gogatherly.gogatherly.model.entity.User;
+import com.gogatherly.gogatherly.model.repository.EventManagerRepository;
 import com.gogatherly.gogatherly.service.EventManagerService;
 import com.gogatherly.gogatherly.service.EventService;
 import com.gogatherly.gogatherly.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.Cache;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,11 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.InetAddress;
 import java.text.Format;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+@Slf4j
 @RestController
 public class UserController {
     @Autowired
@@ -28,8 +30,8 @@ public class UserController {
     private UserService userService;
     @Autowired
     private EventManagerService eventManagerService;
-
-
+    @Autowired
+    private EventManagerRepository eventManagerRepository;
 
 
     @GetMapping(
@@ -133,6 +135,48 @@ public class UserController {
                 .data(res)
                 .status("success")
                 .message("success get event manager with id "+id)
+                .build();
+    }
+
+    @GetMapping(
+            path = "/event-manager",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public  WebResponseList<List<EventManagerResponse>> getEventManager(
+            @RequestParam(value = "page", defaultValue = "0", required = false) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size
+    ){
+        Page<EventManager> eventManagers = eventManagerService.getEventManager(page, size);
+
+        List<EventManagerResponse> responses = new LinkedList<>();
+
+        for(EventManager eventManager : eventManagers.getContent()){
+
+            EventManagerResponse response = new EventManagerResponse();
+
+            response.setName(eventManager.getName());
+            response.setPhotoProfile("/public/profilePhoto/"+eventManager.getProfilePhoto());
+            response.setEmail(eventManager.getEmail());
+            response.setId(eventManager.getId());
+            response.setDescription(eventManager.getDescription());
+            log.info(response.getName());
+            responses.add(response);
+        }
+
+        MetaData metaData = new MetaData();
+        metaData.setPage(eventManagers.getNumber());
+        metaData.setSize(eventManagers.getSize());
+        metaData.setTotalPages(eventManagers.getTotalPages());
+        metaData.setTotalElements(eventManagers.getTotalElements());
+        metaData.setHasNext(eventManagers.hasNext());
+        metaData.setHasPrevious(eventManagers.hasPrevious());
+
+        return WebResponseList
+                .<List<EventManagerResponse>>builder()
+                .status("success")
+                .message("success get event manager")
+                .data(responses)
+                .meta(metaData)
                 .build();
     }
 }
