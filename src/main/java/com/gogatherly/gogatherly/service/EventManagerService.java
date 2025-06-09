@@ -9,6 +9,7 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -146,5 +147,12 @@ public class EventManagerService {
             response.getEvents().add(eventResponse);
         });
         return response;
+    }
+
+    public Page<EventManager> getEventManager(Integer page, Integer size){
+        PageRequest request = PageRequest.of(page, size, Sort.by(Sort.Order.asc("id")));
+        Page<EventManager> eventManagers = eventManagerRepository.findAll(request);
+
+        return eventManagers;
     }
 }
