@@ -1,6 +1,7 @@
 package com.gogatherly.gogatherly.model.repository;
 
 import com.gogatherly.gogatherly.model.entity.Event;
+import com.gogatherly.gogatherly.model.entity.StatusEvent;
 import com.gogatherly.gogatherly.model.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,5 +22,9 @@ public interface EventRepository extends JpaRepository<Event, Integer>, JpaSpeci
     List<Event> fulltextSearchAndByuserId(@Param("title") String title, @Param("userId") Integer userId );
 
     List<Event> findAllByUser_id(Integer id);
+
+    List<Event> findByStatusAndStartEventBefore(StatusEvent status, LocalDateTime startEvent);
+
+    List<Event> findByStatusAndEndEventBefore(StatusEvent status, LocalDateTime endEvent);
 
 }

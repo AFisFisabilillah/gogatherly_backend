@@ -14,6 +14,8 @@ public class ListEventResponse {
 
     private String title;
 
+    private String status;
+
     private String baner;
 
     private LocationEventResponse location;

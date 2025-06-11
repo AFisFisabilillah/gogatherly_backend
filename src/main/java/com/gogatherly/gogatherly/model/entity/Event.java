@@ -30,6 +30,9 @@ public class Event extends AuditableEntity {
 
     private String banner;
 
+    @Enumerated(value = EnumType.STRING)
+    private StatusEvent status;
+
     @Column(name = "start_event")
     private LocalDateTime startEvent;
 

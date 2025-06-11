@@ -136,6 +136,7 @@ public class EventService {
         event.setBanner(newFileName);
         event.setStartEvent(request.getStartTime());
         event.setEndEvent(request.getEndTime());
+        event.setStatus(StatusEvent.SCHEDULED);
         event.setViolation(request.getViolation());
         event.setDescription(request.getDescription());
         event.setUser((User) authentication.getPrincipal());
@@ -205,6 +206,7 @@ public class EventService {
 
         return EventResponse
                 .builder()
+                .status(event.getStatus().name())
                 .id(event.getId())
                 .title(event.getTitle())
                 .banner(event.getBanner())
@@ -278,7 +280,7 @@ public class EventService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
         List<Event> events = new ArrayList<>();
-        if(query == null){
+        if(query == null || query.trim().isEmpty()){
             events = eventRepository.findAllByUser_id(user.getId());
         }else{
             events = eventRepository.fulltextSearchAndByuserId(query, user.getId());
@@ -291,6 +293,7 @@ public class EventService {
             response.setId(event.getId());
             response.setBaner(event.getBanner());
             response.setTitle(event.getTitle());
+            response.setStatus(event.getStatus().name());
 
             LocationEventResponse locationResponse = new LocationEventResponse();
             locationResponse.setCity(event.getLocation().getCity());
@@ -334,7 +337,7 @@ public class EventService {
         FROM events e
         JOIN categories_events ce ON e.id = ce.event_id
         JOIN categories c ON ce.category_id = c.id
-        WHERE 1=1
+        WHERE 1=1 AND  (e.status = 'ACTIVE' OR e.status='SCHEDULED') 
     """);
 
         List<String> queryParams = new ArrayList<>();
@@ -400,6 +403,7 @@ public class EventService {
             response.setId(event.getId());
             response.setBaner(event.getBanner());
             response.setTitle(event.getTitle());
+            response.setStatus(event.getStatus().name());
 
             LocationEventResponse locationResponse = new LocationEventResponse();
             locationResponse.setCity(event.getLocation().getCity());
@@ -474,6 +478,7 @@ public class EventService {
                 .id(event.getId())
                 .title(event.getTitle())
                 .banner(event.getBanner())
+                .status(event.getStatus().name())
                 .categories(categoriesResponse)
                 .location(locationResponse)
                 .tickets(ticketResponses)
@@ -487,6 +492,23 @@ public class EventService {
 
     }
 
+    public List<Event> getEventStatusToActive(){
+        return eventRepository.findByStatusAndStartEventBefore(StatusEvent.SCHEDULED, LocalDateTime.now());
+    }
+
+    public void updateStatusToActive(Event event){
+        event.setStatus(StatusEvent.ACTIVE);
+        eventRepository.save(event);
+    }
+
+    public List<Event> getEventStatusToCompleted(){
+        return eventRepository.findByStatusAndEndEventBefore(StatusEvent.ACTIVE, LocalDateTime.now());
+    }
+
+    public void updateStatusToCompleted(Event event){
+        event.setStatus(StatusEvent.COMPLETED);
+        eventRepository.save(event);
+    }
 
 
 }
