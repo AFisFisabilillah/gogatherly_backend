@@ -119,6 +119,7 @@ public class EventManagerService {
         eventManager.getEvents().forEach(event -> {
             ListEventResponse eventResponse = new ListEventResponse();
             eventResponse.setId(event.getId());
+            eventResponse.setStatus(event.getStatus().name());
             eventResponse.setBaner(event.getBanner());
             eventResponse.setTitle(event.getTitle());
 

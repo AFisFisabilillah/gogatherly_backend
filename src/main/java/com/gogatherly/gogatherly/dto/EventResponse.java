@@ -18,6 +18,7 @@ public class EventResponse {
     private String banner;
     private String description;
     private String violation;
+    private String status;
     private List<String> categories;
     private LocationEventResponse location;
     private LocalDateTime startTime;
