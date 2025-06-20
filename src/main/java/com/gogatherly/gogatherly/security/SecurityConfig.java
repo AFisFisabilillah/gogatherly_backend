@@ -25,6 +25,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("EVENT_MANAGER")
                         .requestMatchers("/public/**").permitAll()
                         .requestMatchers("/em/**").hasRole("EVENT_MANAGER")
+                        .requestMatchers("/order/notification").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )

@@ -457,6 +457,7 @@ public class EventService {
         List<TicketResponse> ticketResponses = new ArrayList<>();
         event.getTickets().forEach(ticket -> {
             TicketResponse response = new TicketResponse();
+            response.setId(ticket.getId());
             response.setTitle(ticket.getTitle());
             response.setPrice(ticket.getPrice());
             response.setStartTime(ticket.getStartTicket());

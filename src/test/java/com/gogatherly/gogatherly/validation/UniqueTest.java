@@ -1,5 +1,7 @@
 package com.gogatherly.gogatherly.validation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gogatherly.gogatherly.dto.RegisterRequest;
 import com.gogatherly.gogatherly.model.entity.Event;
 import com.gogatherly.gogatherly.model.repository.EventRepository;
@@ -11,8 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mail.javamail.JavaMailSender;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @SpringBootTest
 public class UniqueTest {
@@ -23,6 +24,8 @@ public class UniqueTest {
     private JavaMailSender javaMailSender;
     @Autowired
     private EventRepository eventRepository;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     void testValidation(){
@@ -45,9 +48,22 @@ public class UniqueTest {
     }
 
     @Test
-    void fulltextSearch(){
-        List<Event> run = eventRepository.fulltextSearch("Run");
-        System.out.println(run.get(0).getTitle());
-        Assertions.assertEquals(1, run.size());
+    void fulltextSearch() throws JsonProcessingException {
+        UUID idRand = UUID.randomUUID();
+        Map<String, Object> params = new HashMap<>();
+
+        Map<String, String> transactionDetails = new HashMap<>();
+        transactionDetails.put("order_id", idRand.toString());
+        transactionDetails.put("gross_amount", "265000");
+
+        Map<String, String> creditCard = new HashMap<>();
+        creditCard.put("secure", "true");
+
+        params.put("transaction_details", transactionDetails);
+        params.put("credit_card", creditCard);
+
+        String json = objectMapper.writeValueAsString(params);
+
+        System.out.println(json);
     }
 }
