@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${eventName}">Nama Event</title>
+    <style>
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Segoe UI', sans-serif;
+          background-color: #f4f4f4;
+        }
+
+        .ticket-wrapper {
+          max-width: 600px;
+          margin: 40px auto;
+          background-color: #ffffff;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .event-title {
+          background-color: rgb(127, 91, 229);
+          color: white;
+          padding: 25px 30px;
+          text-align: center;
+        }
+
+        .event-title h1 {
+          margin: 0;
+          font-size: 26px;
+        }
+
+        .event-banner {
+          width: 100%;
+          height: 200px;
+          background-size: cover;
+          background-position: center;
+        }
+
+        .ticket-content {
+          padding: 25px 30px;
+        }
+
+        .ticket-info {
+          background-color: rgb(245, 243, 255);
+          border-left: 5px solid rgb(105, 65, 198);
+          padding: 15px 20px;
+          border-radius: 8px;
+          margin-bottom: 20px;
+        }
+
+        .ticket-info p {
+          margin: 6px 0;
+          font-size: 15px;
+        }
+
+        .ticket-info .label {
+          font-weight: bold;
+          color: rgb(105, 65, 198);
+        }
+
+        .qr-section {
+          text-align: center;
+          margin-top: 25px;
+        }
+
+        .qr-section img {
+          width: 180px;
+          border: 4px solid rgb(127, 91, 229);
+          border-radius: 8px;
+        }
+
+        .footer {
+          text-align: center;
+          font-size: 12px;
+          color: #888;
+          padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="ticket-wrapper">
+    <div class="event-title">
+        <h1 th:text="${eventName}">Nama Event</h1>
+    </div>
+
+    <img th:src="${bannerUrl}" alt="Event Banner" style="width: 100%; max-height: 200px; object-fit: cover;">
+
+    <div class="ticket-content">
+        <div class="ticket-info">
+            <p><span class="label">Nama:</span> <span th:text="${buyerName}">Nama Pembeli</span></p>
+            <p><span class="label">Tanggal:</span> <span th:text="${eventDate}">Tanggal</span></p>
+            <p><span class="label">Waktu:</span> <span th:text="${eventTime}">Waktu</span></p>
+            <p><span class="label">Tempat:</span> <span th:text="${eventLocation}">Tempat</span></p>
+        </div>
+
+        <div class="qr-section">
+            <p>Silakan tunjukkan QR Code ini saat check-in:</p>
+            <img th:src="${barcodeUrl}" alt="QR Code Tiket">
+        </div>
+    </div>
+
+    <div class="footer">
+        Email ini dikirim otomatis. Jangan dibalas.
+    </div>
+</div>
+
+</body>
+</html>

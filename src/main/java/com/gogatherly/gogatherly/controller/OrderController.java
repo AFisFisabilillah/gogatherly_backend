@@ -37,6 +37,8 @@ public class OrderController {
     private TransactionEWalletService transactionEWalletService;
     @Autowired
     private TransactionBankService transactionBankService;
+    @Autowired
+    private TicketInstanceService ticketInstanceService;
     @PostMapping(
             path = "/order",
             produces = MediaType.APPLICATION_JSON_VALUE,
@@ -82,6 +84,7 @@ public class OrderController {
         Order order = orderRepository.findById((String) request.get("order_id")).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND, "error", "not found order"));
         if(transactionStatus.equals("capture") || transactionStatus.equals("settlement")){
             orderService.updateStatusOrderToSuccess(order);
+            ticketInstanceService.createTicketInstance(order);
             log.info("payment : success");
         }else if(transactionStatus.equals("pending")){
             orderService.updateStatusOrderToPending(order);
