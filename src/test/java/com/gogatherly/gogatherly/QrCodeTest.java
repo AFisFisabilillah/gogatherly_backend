@@ -39,7 +39,7 @@ public class QrCodeTest {
                 )
                 .withMargin(3)
                 .withSize(1000, 1000)
-                .withLogo(Path.of("./upload/logo/gogatherly.png"))
+                .withLogo(Path.of("./upload/logo/gogatherly_logo.jpg"))
                 .withErrorCorrection(ErrorCorrectionLevel.H)
                 .writeToTmpFile("afisifsabilliah");
         System.out.println("path : "+path.toAbsolutePath());
