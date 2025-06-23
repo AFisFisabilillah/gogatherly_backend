@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -34,6 +35,7 @@ public class TicketInstanceService {
     @Autowired
     private EmailService emailService;
 
+    @Async
     public void createTicketInstance(Order order){
         if(!order.getStatus().equals("SUCCESS")){
             throw  new ErrorResponseException(HttpStatus.PAYMENT_REQUIRED,"error", "you order not success");
