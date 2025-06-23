@@ -8,9 +8,11 @@ import com.gogatherly.gogatherly.model.entity.Order;
 import com.gogatherly.gogatherly.model.entity.OrderDetail;
 import com.gogatherly.gogatherly.model.entity.Ticket;
 import com.gogatherly.gogatherly.model.repository.OrderRepository;
+import com.gogatherly.gogatherly.security.util.Sha512;
 import com.gogatherly.gogatherly.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mail.MailParseException;
@@ -18,7 +20,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +33,12 @@ import java.util.Map;
 @Slf4j
 @RestController
 public class OrderController {
+
+    @Value("${midtrans.server.key}")
+    private String midtransServerKey;
+
+    @Autowired
+    private Sha512 sha512;
     @Autowired
     private OrderService orderService;
     @Autowired
@@ -80,6 +93,25 @@ public class OrderController {
                     .status("success get notification of midtrans")
                     .build();
         }
+
+        String statusCode = (String) request.get("status_code");
+        String grossAmount = (String)request.get("gross_amount");
+        String key = orderId+statusCode+grossAmount+midtransServerKey;
+        String signatureKey =(String) request.get("signature_key");
+        String validasiKey = "";
+
+        try {
+            log.info(key);
+            validasiKey = sha512.getSha512Hash(key);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+        log.info("validasi key : {}",validasiKey);
+
+        if(!signatureKey.equalsIgnoreCase(validasiKey)){
+            throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, "error", "Invalid signature_key");
+        }
+
         log.info("notification payment");
         String transactionStatus = (String) request.get("transaction_status");
         Order order = orderRepository.findById((String) request.get("order_id")).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND, "error", "not found order"));
