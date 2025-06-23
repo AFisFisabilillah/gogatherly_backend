@@ -20,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -111,5 +112,9 @@ public class OrderService {
     public void updateStatusOrderToFailure(Order order){
         order.setStatus("FAILURE");
         orderRepository.save(order);
+    }
+
+    public List<Order> getPaymentPendingExpired(){
+        return orderRepository.findByStatusAndExpiredAtBefore("PENDING", LocalDateTime.now());
     }
 }
