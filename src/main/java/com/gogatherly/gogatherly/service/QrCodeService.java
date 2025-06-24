@@ -12,6 +12,7 @@ import com.gogatherly.gogatherly.dto.VerifyQrCodeRequest;
 import com.gogatherly.gogatherly.exception.ErrorResponseException;
 import com.gogatherly.gogatherly.model.entity.Event;
 import com.gogatherly.gogatherly.model.entity.TicketInstance;
+import com.gogatherly.gogatherly.model.entity.User;
 import com.gogatherly.gogatherly.model.repository.EventRepository;
 import com.gogatherly.gogatherly.model.repository.TicketInstanceRepository;
 import jakarta.validation.ConstraintViolation;
@@ -19,6 +20,7 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -71,7 +73,9 @@ public class QrCodeService {
             throw new ConstraintViolationException(validate);
         }
 
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND, "error", "event ID not found"));
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Event event = eventRepository.findByIdAndUser_Id(eventId, user.getId()).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND, "error", "event ID not found"));
 
 
         TicketInstance ticket = ticketInstanceRepository.findByIdAndTicket_Event(request.getTicketId(), event).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND, "error", "invalid qrcode ticket id "));
