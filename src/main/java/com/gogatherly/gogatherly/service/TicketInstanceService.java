@@ -1,16 +1,22 @@
 package com.gogatherly.gogatherly.service;
 
+import com.gogatherly.gogatherly.dto.MetaData;
+import com.gogatherly.gogatherly.dto.TicketInstanceResponse;
+import com.gogatherly.gogatherly.dto.WebResponseList;
 import com.gogatherly.gogatherly.exception.ErrorResponseException;
-import com.gogatherly.gogatherly.model.entity.Event;
-import com.gogatherly.gogatherly.model.entity.Order;
-import com.gogatherly.gogatherly.model.entity.OrderDetail;
-import com.gogatherly.gogatherly.model.entity.TicketInstance;
+import com.gogatherly.gogatherly.model.entity.*;
+import com.gogatherly.gogatherly.model.repository.EventRepository;
 import com.gogatherly.gogatherly.model.repository.TicketInstanceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -19,11 +25,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DateFormat;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
 public class TicketInstanceService {
+    @Autowired
+    private EventRepository eventRepository;
     @Value("${hostname.url}")
     private String hostname;
     @Autowired
@@ -97,5 +105,42 @@ public class TicketInstanceService {
         }catch (Exception e){
             throw  new ErrorResponseException(HttpStatus.OK, "error", "error email");
         }
+    }
+
+
+    public WebResponseList<List<TicketInstanceResponse>> getAllTciketInstance(Integer page , Integer size, Integer eventId){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Order.asc("id")));
+        Event event = eventRepository.findByIdAndUser_Id(eventId, user.getId()).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND, "error", "event Not found"));
+
+        LinkedList<TicketInstanceResponse> responses = new LinkedList<>();
+        Page<TicketInstance> tickets = ticketInstanceRepository.findByTicket_Event(event, pageRequest);
+
+        for(TicketInstance ticket: tickets.getContent()){
+            TicketInstanceResponse response = new TicketInstanceResponse();
+            response.setTicketId(ticket.getId());
+            response.setUser(ticket.getUser().getName());
+            response.setNik(ticket.getUser().getNik());
+            response.setOrderId(ticket.getOrder().getId());
+            response.setPhoneNumber(ticket.getUser().getPhoneNumber());
+            response.setIsUsed(ticket.getUsed());
+            response.setTicketType(ticket.getTicket().getTitle());
+            response.setUsedAt(ticket.getUsedAt());
+            responses.add(response);
+        }
+        MetaData metaData = new MetaData();
+        metaData.setHasPrevious(tickets.hasPrevious());
+        metaData.setHasNext(tickets.hasNext());
+        metaData.setTotalPages(tickets.getTotalPages());
+        metaData.setTotalElements(tickets.getTotalElements());
+        metaData.setPage(tickets.getNumber());
+        metaData.setSize(tickets.getSize());
+        return WebResponseList
+                .<List<TicketInstanceResponse>>builder()
+                .meta(metaData)
+                .message("Success get user yang membeli ticket")
+                .status("success")
+                .data(responses)
+                .build();
     }
 }

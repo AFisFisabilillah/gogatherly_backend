@@ -156,4 +156,8 @@ public class EventManagerService {
 
         return eventManagers;
     }
+
+    public void getTicketInstanceByEvent(){
+
+    }
 }

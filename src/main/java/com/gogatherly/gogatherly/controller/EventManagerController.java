@@ -1,18 +1,17 @@
 package com.gogatherly.gogatherly.controller;
 
-import com.gogatherly.gogatherly.dto.EventManagerResponse;
-import com.gogatherly.gogatherly.dto.EventManagerUpdateRequest;
-import com.gogatherly.gogatherly.dto.VerifyQrCodeRequest;
-import com.gogatherly.gogatherly.dto.WebResponse;
+import com.gogatherly.gogatherly.dto.*;
 import com.gogatherly.gogatherly.model.entity.TicketInstance;
 import com.gogatherly.gogatherly.service.EventManagerService;
 import com.gogatherly.gogatherly.service.QrCodeService;
+import com.gogatherly.gogatherly.service.TicketInstanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import javax.print.attribute.standard.Media;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -20,6 +19,10 @@ import java.util.Map;
 public class EventManagerController {
     @Autowired
     private EventManagerService eventManagerService;
+
+    @Autowired
+    private TicketInstanceService ticketInstanceService;
+
     @Autowired
     private QrCodeService qrCodeService;
     @GetMapping(
@@ -70,6 +73,19 @@ public class EventManagerController {
                 .message("ticket success register")
                 .data(response)
                 .build();
+    }
+
+    @GetMapping(
+            path = "/event/{eventId}/ticketInstance",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public WebResponseList<List<TicketInstanceResponse>> getTicketInstance(
+            @PathVariable("eventId") Integer eventId,
+            @RequestParam(name = "page",required = false, defaultValue = "0" ) Integer page,
+            @RequestParam(name = "size", required = false, defaultValue = "10") Integer size
+    ){
+        WebResponseList<List<TicketInstanceResponse>> response = ticketInstanceService.getAllTciketInstance(page, size, eventId);
+        return response;
     }
 }
 
