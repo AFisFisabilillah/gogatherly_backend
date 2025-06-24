@@ -1,16 +1,21 @@
 package com.gogatherly.gogatherly.controller;
 
 import com.gogatherly.gogatherly.dto.*;
+import com.gogatherly.gogatherly.model.entity.Scanner;
 import com.gogatherly.gogatherly.model.entity.TicketInstance;
 import com.gogatherly.gogatherly.service.EventManagerService;
 import com.gogatherly.gogatherly.service.QrCodeService;
+import com.gogatherly.gogatherly.service.ScannerService;
 import com.gogatherly.gogatherly.service.TicketInstanceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.print.attribute.standard.Media;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +27,9 @@ public class EventManagerController {
 
     @Autowired
     private TicketInstanceService ticketInstanceService;
+
+    @Autowired
+    private ScannerService scannerService;
 
     @Autowired
     private QrCodeService qrCodeService;
@@ -86,6 +94,28 @@ public class EventManagerController {
     ){
         WebResponseList<List<TicketInstanceResponse>> response = ticketInstanceService.getAllTciketInstance(page, size, eventId);
         return response;
+    }
+
+    @PostMapping(
+            path="/event/{eventId}/createScanner",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<WebResponse<Map<String, Object>>> createScanner(@PathVariable("eventId") Integer eventId, @RequestBody ScannerRequest request){
+        Scanner scanner = scannerService.createScanner(request, eventId);
+
+        LinkedHashMap<String,Object> response = new LinkedHashMap<>();
+        response.put("username", scanner.getUsername());
+        response.put("id", scanner.getId());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(WebResponse
+                        .<Map<String, Object>>builder()
+                        .status("success")
+                        .message("success create scanner for ticket")
+                        .data(response)
+                        .build());
     }
 }
 

@@ -5,8 +5,10 @@ import com.gogatherly.gogatherly.dto.UserResponse;
 import com.gogatherly.gogatherly.dto.UserUpdateRequest;
 import com.gogatherly.gogatherly.exception.ErrorResponseException;
 import com.gogatherly.gogatherly.model.entity.EventManager;
+import com.gogatherly.gogatherly.model.entity.Scanner;
 import com.gogatherly.gogatherly.model.entity.User;
 import com.gogatherly.gogatherly.model.repository.EventManagerRepository;
+import com.gogatherly.gogatherly.model.repository.ScannerRepository;
 import com.gogatherly.gogatherly.model.repository.UserRepository;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -32,6 +34,8 @@ import java.util.*;
 @Service
 public class UserService implements UserDetailsService {
     @Autowired
+    private ScannerRepository scannerRepository;
+    @Autowired
     private EventManagerRepository eventManagerRepository;
 
     @Autowired
@@ -45,9 +49,20 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(username).orElse(null);
-        log.info("berhasi; menemukan user degan nama"+user.getName());
-        return user;
+        Optional<User> user = userRepository.findByEmail(username);
+        if(user.isPresent()){
+            User user1 = user.orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND, "error", "username not found"));
+            log.info("berhasi; menemukan user degan nama"+user1.getName());
+            return user1;
+        }
+
+        Optional<Scanner> scanner = scannerRepository.findByUsername(username);
+        if(scanner.isPresent()){
+            Scanner scanner1 = scanner.orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND, "error", "scanner username not found"));
+            log.info("scanner with username {} login", scanner1.getUsername());
+            return scanner1;
+        }
+        return null;
     }
 
     public User changePhotoProfile(MultipartFile photoProfile){
