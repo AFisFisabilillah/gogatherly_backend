@@ -1,6 +1,7 @@
 package com.gogatherly.gogatherly.service;
 
 import com.gogatherly.gogatherly.dto.ScannerRequest;
+import com.gogatherly.gogatherly.dto.ScannerUdateRequest;
 import com.gogatherly.gogatherly.exception.ErrorResponseException;
 import com.gogatherly.gogatherly.model.entity.Event;
 import com.gogatherly.gogatherly.model.entity.ROLE;
@@ -17,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -49,4 +51,35 @@ public class ScannerService {
         return scanner;
 
     }
+
+    public Scanner changePassword(ScannerUdateRequest request, Integer scannerId, Integer eventId){
+        Set<ConstraintViolation<ScannerUdateRequest>> validate = validator.validate(request);
+        if(validate.size() > 0){
+            throw new ConstraintViolationException(validate);
+        }
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Event event = eventRepository.findByIdAndUser_Id(eventId, user.getId()).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND, "error", "not found event id"));
+        Scanner scanner = scannerRepository.findByEventAndId(event, scannerId).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND, "error", "not found scanner with id " + scannerId));
+        scanner.setPassword(bCryptPasswordEncoder.encode(request.getNewPassword()));
+        scannerRepository.save(scanner);
+        return scanner;
+    }
+
+    public Scanner deletedScanner(Integer eventId, Integer scannerId){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Event event = eventRepository.findByIdAndUser_Id(eventId, user.getId()).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND, "error", "not found event id"));
+
+        Scanner scanner = scannerRepository.findByEventAndId(event, scannerId).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND, "error", "not found scanner with id " + scannerId));
+        scannerRepository.delete(scanner);
+        return scanner;
+    }
+
+    public List<Scanner> getAllScanner(Integer eventId){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Event event = eventRepository.findByIdAndUser_Id(eventId, user.getId()).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND, "error", "not found event id"));
+
+        List<Scanner> scanners = scannerRepository.findByEvent(event);
+        return scanners;
+    }
+
 }
