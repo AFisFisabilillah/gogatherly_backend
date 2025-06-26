@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -31,6 +32,16 @@ public class JwtService {
         return Jwts.builder()
                 .signWith(this.getSignKey())
                 .subject(user.getName())
+                .claims(claim)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis()+expired))
+                .compact();
+    }
+
+    public String generateToken(Map<String, Object> claim, UserDetails userDetails){
+        return Jwts.builder()
+                .signWith(this.getSignKey())
+                .subject(userDetails.getUsername())
                 .claims(claim)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis()+expired))

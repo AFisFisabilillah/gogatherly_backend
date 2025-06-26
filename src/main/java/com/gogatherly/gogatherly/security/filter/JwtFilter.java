@@ -51,31 +51,46 @@ public class JwtFilter implements Filter {
         }
 
         String token = authorization.substring( 7);
-        try {
-            String email = jwtService.getEmail(token);
-            UserDetails user = userService.loadUserByUsername(email);
+        if(request.getRequestURI().startsWith("/scanner")){
+            String username = jwtService.getClaims(token, claims -> claims.get("username", String.class));
+            UserDetails userDetails = userService.loadUserByUsername(username);
 
-            log.info("Masih aman di jwt filter");
-
-            if(user != null && SecurityContextHolder.getContext().getAuthentication() == null){
-                log.info("token valid");
-                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+            if(userDetails != null){
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(auth);
-                log.info("user sudah terdaftar");
+                log.info("scanner with username {} success login", userDetails.getUsername());
             }
             filterChain.doFilter(servletRequest, servletResponse);
-        }catch (Exception e){
-            log.info("eh ada error : "+e.getMessage());
-            Map<String, String> res = new HashMap<>();
-            res.put("status", "error");
-            res.put("message", e.getMessage());
-            String value = objectMapper.writeValueAsString(res);
 
-            response.setStatus(400);
-            response.setHeader("Content-Type", "application/json");
-            response.getWriter().write(value);
+        }else{
+            try {
+                String email = jwtService.getEmail(token);
+                UserDetails user = userService.loadUserByUsername(email);
+
+                log.info("Masih aman di jwt filter");
+
+                if(user != null && SecurityContextHolder.getContext().getAuthentication() == null){
+                    log.info("token valid");
+                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                    log.info("user sudah terdaftar");
+                }
+                filterChain.doFilter(servletRequest, servletResponse);
+            }catch (Exception e){
+                log.info("eh ada error : "+e.getMessage());
+                Map<String, String> res = new HashMap<>();
+                res.put("status", "error");
+                res.put("message", e.getMessage());
+                String value = objectMapper.writeValueAsString(res);
+
+                response.setStatus(400);
+                response.setHeader("Content-Type", "application/json");
+                response.getWriter().write(value);
+            }
         }
+
 
     }
 }

@@ -24,8 +24,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/admin/**").hasRole("EVENT_MANAGER")
                         .requestMatchers("/public/**").permitAll()
+                        .requestMatchers("/scanner/scan").hasRole("SCANNER")
                         .requestMatchers("/em/**").hasRole("EVENT_MANAGER")
                         .requestMatchers("/order/notification").permitAll()
+                        .requestMatchers("/scanner/login").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
