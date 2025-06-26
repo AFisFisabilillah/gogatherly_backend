@@ -94,4 +94,27 @@ public class QrCodeService {
 
         return ticket;
     }
+
+    public TicketInstance scanQrCodeScanner(VerifyQrCodeRequest request, Event event){
+        Set<ConstraintViolation<VerifyQrCodeRequest>> validate = validator.validate(request);
+        if(validate.size() > 0 ){
+            throw new ConstraintViolationException(validate);
+        }
+
+        TicketInstance ticket = ticketInstanceRepository.findByIdAndTicket_Event(request.getTicketId(), event).orElseThrow(() -> new ErrorResponseException(HttpStatus.NOT_FOUND, "error", "invalid qrcode ticket id "));
+
+        if(ticket.getUsed()){
+            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, "error", "ticket is used");
+        }
+
+        if(!ticket.getUser().getNik().equals(request.getNik())){
+            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, "error","Please double-check the NIK or ensure the ticket is used by its rightful owner.");
+        }
+
+        ticket.setUsed(true);
+        ticket.setUsedAt(LocalDateTime.now());
+        ticketInstanceRepository.save(ticket);
+
+        return ticket;
+    }
 }

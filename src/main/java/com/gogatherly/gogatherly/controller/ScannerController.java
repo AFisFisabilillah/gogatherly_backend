@@ -2,8 +2,11 @@ package com.gogatherly.gogatherly.controller;
 
 import com.gogatherly.gogatherly.dto.ScannerLoginRequest;
 import com.gogatherly.gogatherly.dto.ScannerRequest;
+import com.gogatherly.gogatherly.dto.VerifyQrCodeRequest;
 import com.gogatherly.gogatherly.dto.WebResponse;
 import com.gogatherly.gogatherly.model.entity.Scanner;
+import com.gogatherly.gogatherly.model.entity.TicketInstance;
+import com.gogatherly.gogatherly.service.QrCodeService;
 import com.gogatherly.gogatherly.service.ScannerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -19,6 +22,8 @@ import java.util.Map;
 public class ScannerController {
     @Autowired
     private ScannerService scannerService;
+    @Autowired
+    private QrCodeService qrCodeService;
 
     @PostMapping(
             path = "/login",
@@ -35,5 +40,25 @@ public class ScannerController {
                 .build();
     }
 
+    @PostMapping(
+            path = "/scan",
+            produces =  MediaType.APPLICATION_JSON_VALUE
+    )
 
+    public WebResponse<Map<String, String>> scan(@RequestBody VerifyQrCodeRequest request){
+
+        Scanner scanner = (Scanner) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        TicketInstance ticket = qrCodeService.scanQrCodeScanner(request, scanner.getEvent());
+
+        Map<String,String> response = new HashMap<>();
+        response.put("ticket_id",ticket.getId());
+        response.put("buyer_ticket", ticket.getUser().getName());
+        return WebResponse
+                .<Map<String, String>>builder()
+                .status("success")
+                .message("ticket success register")
+                .data(response)
+                .build();
+
+    }
 }
